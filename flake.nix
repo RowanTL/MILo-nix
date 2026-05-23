@@ -57,6 +57,14 @@
           srcPath = ./submodules/simple-knn;
         };
 
+        fusedSSIM = import ./nix/fused-ssim.nix {
+          inherit pkgs;
+          cudaToolkit = pkgs.cudaPackages_12_8.cudatoolkit;
+          pythonPackages = pkgs.python312Packages;
+
+          srcPath = ./submodules/fused-ssim;
+        };
+
         pythonEnv = pkgs.python312.withPackages (ps: with ps; [
           torch-bin
           torchvision-bin
@@ -72,6 +80,7 @@
           diffGaussianRasterization
           diffGaussianRasterizationGof
           simpleKNN
+          fusedSSIM
         ]);
       in
       {
