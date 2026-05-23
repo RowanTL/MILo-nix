@@ -20,22 +20,30 @@
           };
         };
 
+        open3d = import ./nix/open3d.nix {
+          inherit pkgs;
+          pythonPackages = pkgs.python312Packages;
+        };
+
         pythonEnv = pkgs.python312.withPackages (ps: with ps; [
           torch-bin
           torchvision-bin
           torchaudio-bin
           numpy
+          trimesh
+          open3d
         ]);
       in
       {
         devShells.default = pkgs.mkShell {
-          name = "rtx5080-cuda12.8-py3.11-env";
+          name = "rtx5080-cuda12.8-py3.12-env";
 
           buildInputs = [
             pythonEnv
             pkgs.cudaPackages.cudatoolkit
             pkgs.stdenv.cc.cc.lib
             pkgs.zlib
+            pkgs.mkl
           ];
 
           shellHook = ''
