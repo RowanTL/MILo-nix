@@ -12,18 +12,26 @@ pythonPackages.buildPythonPackage {
     pkgs.ninja
     pkgs.which
     cudaToolkit
+    pkgs.gcc13
   ];
 
   buildInputs = [
-    pythonPackages.pytorch-bin
+    pythonPackages.torch-bin
     pkgs.stdenv.cc.cc.lib
   ];
+
+  postPatch = ''
+    sed -i '1i#include <cstdint>' cuda_rasterizer/rasterizer_impl.h
+  '';
 
   # Set the environment variables right before the build phase
   preBuild = ''
     export CUDA_HOME=${cudaToolkit}
     export TORCH_CUDA_ARCH_LIST="12.0"
     export MAX_JOBS=8
+
+    export CC=${pkgs.gcc13}/bin/gcc
+    export CXX=${pkgs.gcc13}/bin/g++
   '';
 
   # Disable tests during the Nix build phase since this is a hardware-dependent 
