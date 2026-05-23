@@ -18,7 +18,7 @@ pythonPackages.buildPythonPackage rec {
   buildInputs = [
     pkgs.gmp   # Replaces conda install gmp
     pkgs.cgal  # Replaces conda install cgal
-    pythonPackages.pytorch-bin
+    pythonPackages.torch-bin
     pkgs.gcc13.cc.lib
   ];
 
