@@ -42,23 +42,10 @@ pythonPackages.buildPythonPackage {
     export CC=${pkgs.gcc13}/bin/gcc
     export CXX=${pkgs.gcc13}/bin/g++
 
-    # 1. TORCH_CXX_FLAGS is never applied in CMakeLists.txt — patch it in
-    substituteInPlace CMakeLists.txt \
-      --replace "find_package(Torch REQUIRED)" \
-      'find_package(Torch REQUIRED)
-set(CMAKE_CXX_FLAGS "''${CMAKE_CXX_FLAGS} ''${TORCH_CXX_FLAGS}")'
-
-    # 2. CMakeLists references $CONDA_PREFIX which doesn't exist in Nix —
-    #    replace it with the actual paths
-    substituteInPlace CMakeLists.txt \
-      --replace "''${CONDA_PREFIX}/lib" "${pkgs.gmp}/lib" \
-      --replace "''${CONDA_PREFIX}/include" "${pkgs.gmp.dev}/include"
-
     cmake . -DCMAKE_CUDA_COMPILER=${cudaToolkit}/bin/nvcc \
             -DCMAKE_CUDA_HOST_COMPILER=${pkgs.gcc13}/bin/g++ \
-            -DCMAKE_PREFIX_PATH="${pythonPackages.torch-bin}/${pythonPackages.python.sitePackages}/torch" \
-            -DCMAKE_CUDA_FLAGS="-I${cudaToolkit}/include" \
-            -DCMAKE_CXX_FLAGS="-I${cudaToolkit}/include" \
+            -DCMAKE_CUDA_FLAGS="-I${cudaToolkit}/include -D_GLIBCXX_USE_CXX11_ABI=1" \
+            -DCMAKE_CXX_FLAGS="-I${cudaToolkit}/include -D_GLIBCXX_USE_CXX11_ABI=1" \
             -DFETCHCONTENT_SOURCE_DIR_PYBIND11=${pythonPackages.pybind11.src} \
             -DFETCHCONTENT_FULLY_DISCONNECTED=ON \
             -DGMP_INCLUDE_DIR=${pkgs.gmp.dev}/include \
@@ -66,12 +53,34 @@ set(CMAKE_CXX_FLAGS "''${CMAKE_CXX_FLAGS} ''${TORCH_CXX_FLAGS}")'
     make -j$MAX_JOBS
   '';
 
-  # Rescue the compiled .so file!
-  # setuptools ignores the binary since it isn't declared in package_data.
-  # We find the compiled extension and force-copy it into the output site-packages.
+  postPatch = ''
+    echo "Surgically patching FindTorch.cmake to use ABI=1..."
+    # Find the specific CMake script and flip the ABI flag to match PyTorch
+    find . -name "FindTorch.cmake" -exec sed -i 's/-D_GLIBCXX_USE_CXX11_ABI=0/-D_GLIBCXX_USE_CXX11_ABI=1/g' {} +
+  '';
+
+  # this is vibe coded slop at this point
   postInstall = ''
     echo "Rescuing compiled C++ extension..."
-    find . -name "*tetranerf_cpp_extension*.so" -exec cp {} $out/lib/python${pythonPackages.python.pythonVersion}/site-packages/tetranerf/utils/extension/ \;
+    EXT_DIR=$out/lib/python${pythonPackages.python.pythonVersion}/site-packages/tetranerf/utils/extension
+    
+    # 1. Hunt down the compiled .so file
+    SO_FILE=$(find . -name "*tetranerf_cpp_extension*.so" | head -n 1)
+    
+    # 2. If we didn't build it, fail the Nix build immediately!
+    if [ -z "$SO_FILE" ]; then
+      echo "💥 FATAL ERROR: CMake failed to produce the .so file!"
+      exit 1
+    fi
+    
+    echo "Found compiled extension at: $SO_FILE"
+    
+    # 3. Copy it and FORCE the exact name Python is looking for
+    cp "$SO_FILE" "$EXT_DIR/tetranerf_cpp_extension.so"
+    
+    echo "Injecting PyTorch library path into RPATH..."
+    TORCH_LIB="${pythonPackages.torch-bin}/lib/python${pythonPackages.python.pythonVersion}/site-packages/torch/lib"
+    patchelf --add-rpath $TORCH_LIB "$EXT_DIR/tetranerf_cpp_extension.so"
   '';
 
   # Tell autoPatchelfHook to ignore PyTorch internals (they load dynamically at runtime)
