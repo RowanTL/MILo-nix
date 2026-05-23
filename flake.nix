@@ -49,6 +49,14 @@
           srcPath = ./submodules/diff-gaussian-rasterization_gof;
         };
 
+        simpleKNN = import ./nix/simple-knn.nix {
+          inherit pkgs;
+          cudaToolkit = pkgs.cudaPackages_12_8.cudatoolkit;
+          pythonPackages = pkgs.python312Packages;
+
+          srcPath = ./submodules/simpleKNN;
+        };
+
         pythonEnv = pkgs.python312.withPackages (ps: with ps; [
           torch-bin
           torchvision-bin
@@ -63,6 +71,7 @@
           diffGaussianRasterizationMS
           diffGaussianRasterization
           diffGaussianRasterizationGof
+          simpleKNN
         ]);
       in
       {
