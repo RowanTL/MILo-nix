@@ -114,6 +114,10 @@
             export CUDA_PATH=${pkgs.cudaPackages.cudatoolkit}
             export LD_LIBRARY_PATH=/run/opengl-driver/lib:${pkgs.linuxPackages.nvidia_x11}/lib:${pkgs.stdenv.cc.cc.lib}/lib:${pkgs.libGL}/lib:$LD_LIBRARY_PATH
 
+            # The Nix equivalent of `pip install -e .`
+            # This makes the python modules in your local directory importable
+            export PYTHONPATH="$PWD:$PWD/milo:$PYTHONPATH"
+
             echo "==================================================="
             echo "🚀 RTX 5080 / CUDA 12.8 & Python 3.12 loaded!"
             echo "==================================================="
