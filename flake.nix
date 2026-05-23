@@ -108,6 +108,9 @@
             pkgs.stdenv.cc.cc.lib
             pkgs.zlib
             pkgs.mkl
+            pkgs.ruff
+            pkgs.ty
+            pkgs.colmapWithCuda
           ];
 
           shellHook = ''
