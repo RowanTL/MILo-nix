@@ -1,23 +1,31 @@
 { pkgs, pythonPackages, cudaToolkit, srcPath }:
 
-pythonPackages.buildPythonPackage rec {
+pythonPackages.buildPythonPackage {
   pname = "tetra-triangulation";
   version = "0.1.1";
   format = "setuptools";
 
   src = srcPath;
 
+  # This forces Nix to skip the automated configurePhase so we 
+  # can manually run cmake in our preBuild phase with the right compilers.
+  dontUseCmakeConfigure = true;
+
   nativeBuildInputs = [
-    pkgs.cmake # Replaces conda install cmake
+    pkgs.cmake
     pkgs.ninja
     pkgs.which
+    pkgs.pkg-config
     cudaToolkit
     pkgs.gcc13
   ];
 
   buildInputs = [
-    pkgs.gmp   # Replaces conda install gmp
-    pkgs.cgal  # Replaces conda install cgal
+    pkgs.gmp
+    pkgs.gmp.dev
+    pkgs.cgal
+    pkgs.mpfr
+    pkgs.mpfr.dev
     pythonPackages.torch-bin
     pkgs.gcc13.cc.lib
   ];
@@ -39,8 +47,14 @@ pythonPackages.buildPythonPackage rec {
     echo "🔨 Running manual CMake & Make for Tetra Triangulation"
     echo "==================================================="
     
-    # Run cmake and make in the source directory exactly like the script does
-    cmake .
+    cmake . -DCMAKE_CUDA_COMPILER=${cudaToolkit}/bin/nvcc \
+            -DCMAKE_CUDA_HOST_COMPILER=${pkgs.gcc13}/bin/g++ \
+            -DCMAKE_CUDA_FLAGS="-I${cudaToolkit}/include" \
+            -DCMAKE_CXX_FLAGS="-I${cudaToolkit}/include" \
+            -DFETCHCONTENT_SOURCE_DIR_PYBIND11=${pythonPackages.pybind11.src} \
+            -DFETCHCONTENT_FULLY_DISCONNECTED=ON \
+            -DGMP_INCLUDE_DIR=${pkgs.gmp.dev}/include \
+            -DGMP_LIBRARIES=${pkgs.gmp}/lib/libgmp.so
     make -j$MAX_JOBS
   '';
 
