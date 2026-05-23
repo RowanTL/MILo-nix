@@ -35,23 +35,30 @@ pythonPackages.buildPythonPackage {
     pythonPackages.trimesh # Required by setup.py
   ];
 
-  # We use the preBuild phase to replicate the author's custom compile script
   preBuild = ''
     export CUDA_HOME=${cudaToolkit}
     export TORCH_CUDA_ARCH_LIST="12.0"
     export MAX_JOBS=8
-    
     export CC=${pkgs.gcc13}/bin/gcc
     export CXX=${pkgs.gcc13}/bin/g++
 
-    echo "==================================================="
-    echo "🔨 Running manual CMake & Make for Tetra Triangulation"
-    echo "==================================================="
-    
+    # 1. TORCH_CXX_FLAGS is never applied in CMakeLists.txt — patch it in
+    substituteInPlace CMakeLists.txt \
+      --replace "find_package(Torch REQUIRED)" \
+      'find_package(Torch REQUIRED)
+set(CMAKE_CXX_FLAGS "''${CMAKE_CXX_FLAGS} ''${TORCH_CXX_FLAGS}")'
+
+    # 2. CMakeLists references $CONDA_PREFIX which doesn't exist in Nix —
+    #    replace it with the actual paths
+    substituteInPlace CMakeLists.txt \
+      --replace "''${CONDA_PREFIX}/lib" "${pkgs.gmp}/lib" \
+      --replace "''${CONDA_PREFIX}/include" "${pkgs.gmp.dev}/include"
+
     cmake . -DCMAKE_CUDA_COMPILER=${cudaToolkit}/bin/nvcc \
             -DCMAKE_CUDA_HOST_COMPILER=${pkgs.gcc13}/bin/g++ \
-            -DCMAKE_CUDA_FLAGS="-I${cudaToolkit}/include -D_GLIBCXX_USE_CXX11_ABI=1" \
-            -DCMAKE_CXX_FLAGS="-I${cudaToolkit}/include -D_GLIBCXX_USE_CXX11_ABI=1" \
+            -DCMAKE_PREFIX_PATH="${pythonPackages.torch-bin}/${pythonPackages.python.sitePackages}/torch" \
+            -DCMAKE_CUDA_FLAGS="-I${cudaToolkit}/include" \
+            -DCMAKE_CXX_FLAGS="-I${cudaToolkit}/include" \
             -DFETCHCONTENT_SOURCE_DIR_PYBIND11=${pythonPackages.pybind11.src} \
             -DFETCHCONTENT_FULLY_DISCONNECTED=ON \
             -DGMP_INCLUDE_DIR=${pkgs.gmp.dev}/include \
