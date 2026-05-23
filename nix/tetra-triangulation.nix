@@ -52,6 +52,8 @@ pythonPackages.buildPythonPackage {
             -DCMAKE_CUDA_HOST_COMPILER=${pkgs.gcc13}/bin/g++ \
             -DCMAKE_CUDA_FLAGS="-I${cudaToolkit}/include" \
             -DCMAKE_CXX_FLAGS="-I${cudaToolkit}/include" \
+            -DCMAKE_CUDA_FLAGS="-I${cudaToolkit}/include -D_GLIBCXX_USE_CXX11_ABI=0" \
+            -DCMAKE_CXX_FLAGS="-I${cudaToolkit}/include -D_GLIBCXX_USE_CXX11_ABI=0" \
             -DFETCHCONTENT_SOURCE_DIR_PYBIND11=${pythonPackages.pybind11.src} \
             -DFETCHCONTENT_FULLY_DISCONNECTED=ON \
             -DGMP_INCLUDE_DIR=${pkgs.gmp.dev}/include \
