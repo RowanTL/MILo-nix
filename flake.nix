@@ -32,6 +32,10 @@
           numpy
           trimesh
           open3d
+          scikit-image
+          opencv-python
+          plyfile
+          tqdm
         ]);
       in
       {
