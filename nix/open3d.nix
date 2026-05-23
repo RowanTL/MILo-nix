@@ -8,7 +8,7 @@ pythonPackages.buildPythonPackage {
   # Notice the `cp312` in the filename for Python 3.12
   src = pkgs.fetchurl {
     url = "https://files.pythonhosted.org/packages/2b/95/3723e5ade77c234a1650db11cbe59fe25c4f5af6c224f8ea22ff088bb36a/open3d-0.19.0-cp312-cp312-manylinux_2_31_x86_64.whl"; 
-    hash = "sha256-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="; 
+    hash = "sha256-AeRZDcIgkEApLr5QlUL78r+GnqYLzZvno/53tlutMZI="; 
   };
 
   nativeBuildInputs = [
