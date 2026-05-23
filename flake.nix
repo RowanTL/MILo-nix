@@ -65,6 +65,14 @@
           srcPath = ./submodules/fused-ssim;
         };
 
+        tetraTriangulation = import ./nix/tetra-triangulation.nix {
+          inherit pkgs;
+          cudaToolkit = pkgs.cudaPackages_12_8.cudatoolkit;
+          pythonPackages = pkgs.python312Packages;
+
+          srcPath = ./submodules/tetra_triangulation;
+        };
+
         pythonEnv = pkgs.python312.withPackages (ps: with ps; [
           torch-bin
           torchvision-bin
@@ -81,6 +89,7 @@
           diffGaussianRasterizationGof
           simpleKNN
           fusedSSIM
+          tetraTriangulation
         ]);
       in
       {
