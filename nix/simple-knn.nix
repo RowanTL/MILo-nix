@@ -7,6 +7,11 @@ pythonPackages.buildPythonPackage {
 
   src = srcPath;
 
+  # Inject the missing float header for FLT_MAX
+  postPatch = ''
+    sed -i '1i#include <cfloat>' simple_knn.cu
+  '';
+
   nativeBuildInputs = [
     pkgs.ninja
     pkgs.which
