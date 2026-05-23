@@ -46,7 +46,7 @@
           cudaToolkit = pkgs.cudaPackages_12_8.cudatoolkit;
           pythonPackages = pkgs.python312Packages;
 
-          srcPath = ./submodules/diff-gaussian-rasterization-gof;
+          srcPath = ./submodules/diff-gaussian-rasterization_gof;
         };
 
         pythonEnv = pkgs.python312.withPackages (ps: with ps; [
