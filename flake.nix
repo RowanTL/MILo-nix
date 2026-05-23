@@ -72,6 +72,11 @@
 
           srcPath = ./submodules/tetra_triangulation;
         };
+        
+        nvDiffRasterization = import ./nix/nv-diff-rasterization.nix {
+          inherit pkgs;
+          pythonPackages = pkgs.python312Packages;
+        };
 
         pythonEnv = pkgs.python312.withPackages (ps: with ps; [
           torch-bin
@@ -90,6 +95,7 @@
           simpleKNN
           fusedSSIM
           tetraTriangulation
+          nvDiffRasterization
         ]);
       in
       {
