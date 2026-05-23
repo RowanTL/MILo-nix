@@ -18,6 +18,7 @@ pythonPackages.buildPythonPackage {
     pkgs.pkg-config
     cudaToolkit
     pkgs.gcc13
+    pkgs.autoPatchelfHook
   ];
 
   buildInputs = [
@@ -57,6 +58,24 @@ pythonPackages.buildPythonPackage {
             -DGMP_LIBRARIES=${pkgs.gmp}/lib/libgmp.so
     make -j$MAX_JOBS
   '';
+
+  # Rescue the compiled .so file!
+  # setuptools ignores the binary since it isn't declared in package_data.
+  # We find the compiled extension and force-copy it into the output site-packages.
+  postInstall = ''
+    echo "Rescuing compiled C++ extension..."
+    find . -name "*tetranerf_cpp_extension*.so" -exec cp {} $out/lib/python${pythonPackages.python.pythonVersion}/site-packages/tetranerf/utils/extension/ \;
+  '';
+
+  # Tell autoPatchelfHook to ignore PyTorch internals (they load dynamically at runtime)
+  autoPatchelfIgnoreMissingDeps = [
+    "libtorch_cpu.so"
+    "libtorch.so"
+    "libc10.so"
+    "libcudart.so.12"
+    "libc10_cuda.so"
+    "libtorch_cuda.so"
+  ];
 
   doCheck = false;
   
