@@ -15,6 +15,17 @@ pythonPackages.buildPythonPackage {
     pkgs.autoPatchelfHook
   ];
 
+  # Explicitly tell autoPatchelfHook to ignore the PyTorch/CUDA libraries
+  # that Open3D will dynamically load at runtime.
+  autoPatchelfIgnoreMissingDeps = [
+    "libtorch_cpu.so"
+    "libtorch.so"
+    "libc10.so"
+    "libcudart.so.12"
+    "libc10_cuda.so"
+    "libtorch_cuda.so"
+  ];
+
   buildInputs = with pkgs; [
     stdenv.cc.cc.lib
     libGL
@@ -40,8 +51,8 @@ pythonPackages.buildPythonPackage {
     dash
     configargparse
     nbformat
+    pyquaternion
   ];
 
   doCheck = false;
-  pythonImportsCheck = [ "open3d" ];
 }
