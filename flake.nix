@@ -25,6 +25,22 @@
           pythonPackages = pkgs.python312Packages;
         };
 
+        diffGaussianRasterizationMS = import ./nix/diff-gaussian-rasterization-ms.nix {
+          inherit pkgs;
+          cudaToolkit = pkgs.cudaPackages_12_8.cudatoolkit;
+          pythonPackages = pkgs.python312Packages;
+          
+          srcPath = ./submodules/diff-gaussian-rasterization_ms;
+        };
+
+        diffGaussianRasterization = import ./nix/diff-gaussian-rasterization.nix {
+          inherit pkgs;
+          cudaToolkit = pkgs.cudaPackages_12_8.cudatoolkit;
+          pythonPackages = pkgs.python312Packages;
+
+          srcPath = ./submodules/diff-gaussian-rasterization;
+        };
+
         pythonEnv = pkgs.python312.withPackages (ps: with ps; [
           torch-bin
           torchvision-bin
@@ -36,6 +52,8 @@
           opencv-python
           plyfile
           tqdm
+          diffGaussianRasterizationMS
+          diffGaussianRasterization
         ]);
       in
       {
@@ -44,7 +62,7 @@
 
           buildInputs = [
             pythonEnv
-            pkgs.cudaPackages.cudatoolkit
+            pkgs.cudaPackages_12_8.cudatoolkit
             pkgs.stdenv.cc.cc.lib
             pkgs.zlib
             pkgs.mkl
@@ -52,7 +70,7 @@
 
           shellHook = ''
             export CUDA_PATH=${pkgs.cudaPackages.cudatoolkit}
-            export LD_LIBRARY_PATH=/run/opengl-driver/lib:${pkgs.linuxPackages.nvidia_x11}/lib:${pkgs.stdenv.cc.cc.lib}/lib:$LD_LIBRARY_PATH
+            export LD_LIBRARY_PATH=/run/opengl-driver/lib:${pkgs.linuxPackages.nvidia_x11}/lib:${pkgs.stdenv.cc.cc.lib}/lib:${pkgs.libGL}/lib:$LD_LIBRARY_PATH
 
             echo "==================================================="
             echo "🚀 RTX 5080 / CUDA 12.8 & Python 3.12 loaded!"

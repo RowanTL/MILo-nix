@@ -20,7 +20,7 @@ pythonPackages.buildPythonPackage {
   ];
 
   buildInputs = [
-    pythonPackages.pytorch-bin
+    pythonPackages.torch-bin
     pkgs.gcc13.cc.lib
   ];
 
