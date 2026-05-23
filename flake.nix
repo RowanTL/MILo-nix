@@ -41,6 +41,14 @@
           srcPath = ./submodules/diff-gaussian-rasterization;
         };
 
+        diffGaussianRasterizationGof = import ./nix/diff-gaussian-rasterization-gof.nix {
+          inherit pkgs;
+          cudaToolkit = pkgs.cudaPackages_12_8.cudatoolkit;
+          pythonPackages = pkgs.python312Packages;
+
+          srcPath = ./submodules/diff-gaussian-rasterization-gof;
+        };
+
         pythonEnv = pkgs.python312.withPackages (ps: with ps; [
           torch-bin
           torchvision-bin
@@ -54,6 +62,7 @@
           tqdm
           diffGaussianRasterizationMS
           diffGaussianRasterization
+          diffGaussianRasterizationGof
         ]);
       in
       {
