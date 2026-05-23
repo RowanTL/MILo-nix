@@ -54,7 +54,7 @@
           cudaToolkit = pkgs.cudaPackages_12_8.cudatoolkit;
           pythonPackages = pkgs.python312Packages;
 
-          srcPath = ./submodules/simpleKNN;
+          srcPath = ./submodules/simple-knn;
         };
 
         pythonEnv = pkgs.python312.withPackages (ps: with ps; [
