@@ -9,7 +9,7 @@ pythonPackages.buildPythonPackage {
     owner = "NVlabs";
     repo = "nvdiffrast";
     rev = "729261dc64c4241ea36efda84fbf532cc8b425b8";
-    hash = "sha256-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=";
+    hash = "sha256-sg//960OkTIW6QgwcdsdI9Oy9MAuujDz8QwX2aGqi5w=";
   };
 
   # Numpy is the only installation requirement defined in setup.py
