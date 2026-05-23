@@ -31,9 +31,9 @@ pythonPackages.buildPythonPackage {
     libGL
     glib
     zlib
-    xorg.libX11
-    xorg.libXext
-    xorg.libXrender
+    libx11
+    libxext
+    libxrender
     libusb1
   ];
 
